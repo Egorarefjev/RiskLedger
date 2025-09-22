@@ -1,0 +1,16 @@
+import { APIRequest } from './index';
+import { API_ENDPOINTS } from './endpoints';
+
+
+export async function login(username: string, password: string) {
+    const basicAuth = btoa(`${username}:${password}`);
+    return APIRequest('GET', API_ENDPOINTS.AUTHENTICATION, null, {
+        Authorization: `Basic ${basicAuth}`
+    });
+}
+
+// обновление (если будет использоваться)
+export async function refreshToken() {
+    return APIRequest('POST', API_ENDPOINTS.REFRESH);
+}
+

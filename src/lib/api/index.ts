@@ -1,11 +1,17 @@
 const API_URL = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
-// import { getToken } from '../services/authService.js';
 
-export async function APIRequest(method: string, body: any, endpoint: string) {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-    const token = '';
+export async function APIRequest(
+    method: string,
+    endpoint: string,
+    body?: any,
+    extraHeaders?: any,
+) {
+    const headers: Record<string, string> = { 'Content-Type': 'application/json', ...extraHeaders };
+    const token = localStorage.getItem('token');
 
-    if (token) headers['Authorization'] = `Bearer ${token}`;
+    if (token && !headers['Authorization']) {
+        headers['Authorization'] = `Bearer ${token}`;
+    }
 
     const options: RequestInit = {
         method,
@@ -14,7 +20,7 @@ export async function APIRequest(method: string, body: any, endpoint: string) {
     };
 
     if (body !== undefined && body !== null) {
-        options.body = typeof body === 'string' ? body : JSON.stringify(body);
+        options.body = JSON.stringify(body);
     }
 
     const res = await fetch(`${API_URL}${endpoint}`, options);
