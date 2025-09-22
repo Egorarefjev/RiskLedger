@@ -9,7 +9,6 @@ export async function login(username: string, password: string) {
     });
 }
 
-// обновление (если будет использоваться)
 export async function refreshToken() {
     return APIRequest('POST', API_ENDPOINTS.REFRESH);
 }
