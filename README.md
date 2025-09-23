@@ -1,38 +1,32 @@
-# sv
+# IMDG Registry App
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+Тестовое задание (Frontend, SvelteKit + Tailwind + TypeScript)
 
-## Creating a project
+## 🚀 Стек
+- SvelteKit — основной фреймворк
+- TailwindCSS — стилизация
+- TypeScript — строгая типизация
+- Fetch API — работа с сервером
 
-If you're seeing this, you've probably already done this step. Congrats!
+## ⚙️ Возможности
+- Аутентификация и продление токена
+- Загрузка данных из справочника **IMDG**
+- Табличное представление
+- Постраничный вывод
+- Настраиваемый размер страницы
+- Фильтрация по одному или нескольким полям
 
-```sh
-# create a new project in the current directory
-npx sv create
 
-# create a new project in my-app
-npx sv create my-app
-```
+## ▶️ Запуск
+```bash
+# Установка зависимостей
+npm install
 
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
+# Запуск dev-сервера
 npm run dev
 
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
+# Сборка проекта
 npm run build
-```
 
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+# Превью production-сборки
+npm run preview
