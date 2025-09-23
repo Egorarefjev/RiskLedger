@@ -29,10 +29,14 @@ export async function APIRequest(
 
     if (res.status === 401 && !isRefreshed) {
         const newToken = await refreshToken();
-        localStorage.setItem('token', newToken.access.token);
-
-        isRefreshed = true;
-        res = await fetch(`${API_URL}${endpoint}`, options);
+        if (newToken?.access?.token !== null) {
+            localStorage.setItem('token', newToken.access.token);
+            headers.Token = newToken;
+            isRefreshed = true;
+            res = await fetch(`${API_URL}${endpoint}`, options);
+        } else {
+            throw new Error('New Token not found');
+        }
     }
 
     if (!res.ok) {
@@ -40,7 +44,9 @@ export async function APIRequest(
         try {
             const err = await res.json();
             if (err?.message) message = err.message;
-        } catch {}
+        } catch(e) {
+            console.error(e)
+        }
         throw new Error(message);
     }
 
