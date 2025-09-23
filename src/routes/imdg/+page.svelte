@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { goto, afterNavigate } from '$app/navigation';
     import { browser } from '$app/environment';
-    import { getIMDG } from '../../lib/api/imdg';
+    import {getIMDG, getIMDGCount} from '../../lib/api/imdg';
 
     import Button from '../../lib/components/ui/Button.svelte';
     import Select from '../../lib/components/ui/Select.svelte';
@@ -51,20 +51,12 @@
     }
 
     async function loadImdgList() {
-        if (!browser) return;
-
         isLoading = true;
         errorMessage = '';
 
         try {
-            const response = await getIMDG(buildQueryParams());
-            const responseData = Array.isArray(response?.data)
-                ? response.data
-                : (Array.isArray(response) ? response : []);
-            const metadata = response?.meta ?? {};
-
-            items = responseData; // без сортировки
-            totalCount = Number(metadata.total ?? responseData.length);
+            items = await getIMDG(buildQueryParams());
+            totalCount = await getIMDGCount(buildQueryParams());
         } catch (error: any) {
             errorMessage = error?.message ?? 'Ошибка загрузки';
         } finally {
@@ -102,6 +94,10 @@
         if (Number.isFinite(nextPerPage) && nextPerPage > 0) {
             updateQueryParams({ page: 1, perPage: nextPerPage });
         }
+    }
+
+    function getMaxPage(): number {
+        return Math.ceil(totalCount / perPage) || 1;
     }
 
     onMount(() => {
@@ -159,7 +155,7 @@
     <div class="flex items-center gap-3 pt-2">
         <Button on:click={handlePrevPageClick} disabled={isLoading || page<=1}>Назад</Button>
         <span class="text-sm">Стр. {page}</span>
-        <Button on:click={handleNextPageClick} disabled={isLoading}>Вперёд</Button>
+        <Button on:click={handleNextPageClick} disabled={isLoading || page >= getMaxPage()}>>Вперёд</Button>
     </div>
 </section>
 
