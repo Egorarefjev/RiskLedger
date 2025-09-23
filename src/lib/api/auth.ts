@@ -17,7 +17,7 @@ export function logout() {
     try {
         localStorage.removeItem('token');
     } catch {
-        // ignore
+        console.error('Could not remove token');
     }
 }
 

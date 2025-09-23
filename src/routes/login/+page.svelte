@@ -1,6 +1,8 @@
 <script lang="ts">
     import { login } from '$lib/api/auth';
     import { goto } from '$app/navigation';
+    import Input from "$lib/components/ui/Input.svelte";
+    import Button from "$lib/components/ui/Button.svelte";
 
     let username = '';
     let password = '';
@@ -18,23 +20,22 @@
 </script>
 
 <form on:submit|preventDefault={handleSubmit} class="flex flex-col gap-4 w-64 mx-auto mt-20">
-    <input
+    <Input
             type="text"
             placeholder="Логин"
             bind:value={username}
-            class="border p-2 rounded"
             required
     />
-    <input
+    <Input
             type="password"
             placeholder="Пароль"
             bind:value={password}
             class="border p-2 rounded"
             required
     />
-    <button type="submit" class="bg-blue-600 text-white p-2 rounded">
+    <Button type="submit">
         Войти
-    </button>
+    </Button>
 
     {#if error}
         <p class="text-red-500">{error}</p>

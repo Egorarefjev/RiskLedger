@@ -8,13 +8,16 @@
     import Select from '../../lib/components/ui/Select.svelte';
     import ImdgTable from '../../lib/components/imdg/ImdgTable.svelte';
     import { IMDG_COLUMNS } from '../../lib/components/imdg/columns';
+    import {encodeJsonBase64Url} from "$lib/utils/encoding";
+    import Input from "$lib/components/ui/Input.svelte";
 
     const DEFAULT_PAGE = 1;
     const DEFAULT_PER_PAGE = 10;
 
     const QUERY = {
         PAGE: 'page',
-        PER_PAGE: 'perPage'
+        PER_PAGE: 'perPage',
+        FILTER: 'filter',
     } as const;
 
     const PER_PAGE_OPTIONS = [10, 20, 50, 100].map((pageSize) => {
@@ -23,30 +26,31 @@
 
     let page = DEFAULT_PAGE;
     let perPage: number = DEFAULT_PER_PAGE;
+    let filter: [] | null = null;
+    let unidInput = '';
 
     let items: any[] = [];
     let totalCount = 0;
     let isLoading = false;
     let errorMessage = '';
 
-    function parsePositiveInteger(value: string | null, fallback: number) {
-        const numberValue = Number(value);
-        if (Number.isFinite(numberValue) && numberValue > 0) {
-            return numberValue;
-        }
-        return fallback;
-    }
-
     function readQueryParams() {
         const searchParams = new URLSearchParams(location.search);
-        page = parsePositiveInteger(searchParams.get(QUERY.PAGE), DEFAULT_PAGE);
-        perPage = parsePositiveInteger(searchParams.get(QUERY.PER_PAGE), DEFAULT_PER_PAGE);
+        page = Number(searchParams.get(QUERY.PAGE)) ? Number(searchParams.get(QUERY.PAGE)) : DEFAULT_PAGE;
+        perPage = Number(searchParams.get(QUERY.PER_PAGE)) ? Number(searchParams.get(QUERY.PER_PAGE)) : DEFAULT_PER_PAGE;
+        if (typeof searchParams.get(QUERY.FILTER) === 'string') {
+            filter = searchParams.get(QUERY.FILTER).split(',')
+        }
     }
 
     function buildQueryParams(): URLSearchParams {
         const params = new URLSearchParams();
         params.set(QUERY.PAGE, String(page));
         params.set(QUERY.PER_PAGE, String(perPage));
+        if (filter !== null && filter !== undefined) {
+            params.set(QUERY.FILTER, encodeJsonBase64Url(filter));
+        }
+
         return params;
     }
 
@@ -55,8 +59,11 @@
         errorMessage = '';
 
         try {
-            items = await getIMDG(buildQueryParams());
-            totalCount = await getIMDGCount(buildQueryParams());
+            const params = buildQueryParams();
+            [items, totalCount] = await Promise.all([
+                getIMDG(buildQueryParams()),
+                getIMDGCount(buildQueryParams()),
+            ]);
         } catch (error: any) {
             errorMessage = error?.message ?? 'Ошибка загрузки';
         } finally {
@@ -64,7 +71,7 @@
         }
     }
 
-    function updateQueryParams(next: { page?: number; perPage?: number }) {
+    function updateQueryParams(next: { page?: number; perPage?: number, filter?: [] | null }) {
         const searchParams = new URLSearchParams(location.search);
 
         if (next.page != null) {
@@ -72,6 +79,12 @@
         }
         if (next.perPage != null) {
             searchParams.set(QUERY.PER_PAGE, String(next.perPage));
+        }
+
+        if (next.filter !== null && next.filter !== undefined) {
+            searchParams.set(QUERY.FILTER, String(next.filter));
+        } else {
+            searchParams.delete(QUERY.FILTER);
         }
 
         goto(`/imdg?${searchParams.toString()}`, { keepfocus: true, noscroll: true });
@@ -89,8 +102,8 @@
         }
     }
 
-    function handlePerPageChange(event: Event) {
-        const nextPerPage = Number((event.target as HTMLSelectElement).value);
+    function handlePerPageChange(event) {
+        const nextPerPage = Number(event.detail);
         if (Number.isFinite(nextPerPage) && nextPerPage > 0) {
             updateQueryParams({ page: 1, perPage: nextPerPage });
         }
@@ -98,6 +111,17 @@
 
     function getMaxPage(): number {
         return Math.ceil(totalCount / perPage) || 1;
+    }
+
+    function handleApplyUnidFilter() {
+        updateQueryParams({ filter: ['eq', 'unid', unidInput] });
+    }
+
+    function handleClearFilter() {
+        filter = null;
+        unidInput = '';
+        updateQueryParams({ filter: null });
+
     }
 
     onMount(() => {
@@ -135,6 +159,11 @@
     <h1 class="font-semibold text-xl">IMDG</h1>
 
     <div class="flex items-center gap-4">
+        <label class="flex items-center gap-2">
+            <Input bind:value={unidInput} placeholder="Введите UN" />
+            <Button on:click={handleApplyUnidFilter}>Применить</Button>
+            <Button on:click={handleClearFilter}>Сбросить</Button>
+        </label>
         <label class="flex items-center gap-2">
             <span class="text-sm text-gray-600">На странице:</span>
             <Select on:change={handlePerPageChange} bind:value={perPage} options={PER_PAGE_OPTIONS} disabled={isLoading} />
