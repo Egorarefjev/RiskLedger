@@ -1,16 +1,24 @@
 <script lang="ts">
-    import { onMount } from 'svelte';
-    import { getIMDG } from "$lib/api/imdg";
+    import { goto } from '$app/navigation';
+    import Button from '$lib/components/ui/Button.svelte';
+    import { logout } from "$lib/api/auth";
 
-    onMount(async () => {
-        try {
-            const data = await getIMDG();
-            console.log(data);
-        } catch (e) {
-            console.log(e)
-        }
-    })
+    async function handleLogout() {
+        logout();
+        goto('/login');
+    }
+
+    function goToTable() {
+        goto('/imdg');
+    }
+
 </script>
 
-<h1>Welcome to SvelteKit</h1>
-<p>Visit <a href="https://svelte.dev/docs/kit">svelte.dev/docs/kit</a> to read the documentation</p>
+<div class="flex items-center justify-between mb-6">
+    <h1 class="text-xl font-semibold">Главная</h1>
+    <div class="flex gap-2">
+        <Button on:click={goToTable}>К таблице IMDG</Button>
+        <Button on:click={handleLogout} >Выйти</Button>
+    </div>
+</div>
+

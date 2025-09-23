@@ -13,3 +13,11 @@ export async function refreshToken() {
     return APIRequest('GET', API_ENDPOINTS.REFRESH);
 }
 
+export function logout() {
+    try {
+        localStorage.removeItem('token');
+    } catch {
+        // ignore
+    }
+}
+
