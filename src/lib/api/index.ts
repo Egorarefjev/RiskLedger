@@ -1,16 +1,17 @@
+import { refreshToken } from './auth';
 const API_URL = String(import.meta.env.VITE_API_URL || '').replace(/\/$/, '');
 
 export async function APIRequest(
     method: string,
     endpoint: string,
     body?: any,
-    extraHeaders?: any,
-) {
-    const headers: Record<string, string> = { 'Content-Type': 'application/json', ...extraHeaders };
+    extraHeaders?: any,) {
+    let isRefreshed = false;
+    const headers: Record<string, string> = { ...extraHeaders };
     const token = localStorage.getItem('token');
 
-    if (token && !headers['Authorization']) {
-        headers['Authorization'] = `Bearer ${token}`;
+    if (token && !('Token' in headers)) {
+        headers['Token'] = token;
     }
 
     const options: RequestInit = {
@@ -18,12 +19,21 @@ export async function APIRequest(
         headers,
         credentials: 'include'
     };
-
-    if (body !== undefined && body !== null) {
+    if (body !== undefined && body !== null && !headers['Content-Type']) {
+        headers['Content-Type'] = 'application/json';
         options.body = JSON.stringify(body);
+
     }
 
-    const res = await fetch(`${API_URL}${endpoint}`, options);
+    let res = await fetch(`${API_URL}${endpoint}`, options);
+
+    if (res.status === 401 && !isRefreshed) {
+        const newToken = await refreshToken();
+        localStorage.setItem('token', newToken.access.token);
+
+        isRefreshed = true;
+        res = await fetch(`${API_URL}${endpoint}`, options);
+    }
 
     if (!res.ok) {
         let message = `Ошибка: ${res.status}`;

@@ -10,6 +10,6 @@ export async function login(username: string, password: string) {
 }
 
 export async function refreshToken() {
-    return APIRequest('POST', API_ENDPOINTS.REFRESH);
+    return APIRequest('GET', API_ENDPOINTS.REFRESH);
 }
 
