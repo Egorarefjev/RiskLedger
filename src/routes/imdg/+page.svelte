@@ -61,8 +61,8 @@
         try {
             const params = buildQueryParams();
             [items, totalCount] = await Promise.all([
-                getIMDG(buildQueryParams()),
-                getIMDGCount(buildQueryParams()),
+                getIMDG(params),
+                getIMDGCount(params),
             ]);
         } catch (error: any) {
             errorMessage = error?.message ?? 'Ошибка загрузки';
@@ -113,11 +113,11 @@
         return Math.ceil(totalCount / perPage) || 1;
     }
 
-    function handleApplyUnidFilter() {
+    function handleApplyUnidFilterClick() {
         updateQueryParams({ filter: ['eq', 'unid', unidInput] });
     }
 
-    function handleClearFilter() {
+    function handleClearFilterClick() {
         filter = null;
         unidInput = '';
         updateQueryParams({ filter: null });
@@ -161,8 +161,8 @@
     <div class="flex items-center gap-4">
         <label class="flex items-center gap-2">
             <Input bind:value={unidInput} placeholder="Введите UN" />
-            <Button on:click={handleApplyUnidFilter}>Применить</Button>
-            <Button on:click={handleClearFilter}>Сбросить</Button>
+            <Button on:click={handleApplyUnidFilterClick}>Применить</Button>
+            <Button on:click={handleClearFilterClick}>Сбросить</Button>
         </label>
         <label class="flex items-center gap-2">
             <span class="text-sm text-gray-600">На странице:</span>
